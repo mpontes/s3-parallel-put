@@ -189,7 +189,8 @@ def walk_tar(source, options):
 
 
 def walk_s3(source, options):
-    connection = S3Connection(host=options.host, is_secure=options.secure)
+    connection = boto.s3.connect_to_region(options.bucket_region, is_secure=options.secure,
+                                           host=options.host)
     for key in connection.get_bucket(source).list():
         if excluded(key.name, options):
             continue
@@ -275,7 +276,8 @@ def putter(put, put_queue, stat_queue, options):
         should_gzip = False
         try:
             if connection is None:
-                connection = S3Connection(is_secure=options.secure, host=options.host)
+                connection = boto.s3.connect_to_region(options.bucket_region, is_secure=options.secure,
+                                                       host=options.host)
             if bucket is None:
                 bucket = connection.get_bucket(options.bucket)
             key = put(bucket, key_name, value)
@@ -349,8 +351,7 @@ def main(argv):
             help='set bucket')
     group.add_option('--bucket_region', default='us-east-1',
             help='set bucket region if not in us-east-1 (default new bucket region)')
-    group.add_option('--host', default='s3.amazonaws.com',
-            help='set AWS host name')
+    group.add_option('--host', help='set AWS host name')
     group.add_option('--insecure', action='store_false', dest='secure',
             help='use insecure connection')
     group.add_option('--secure', action='store_true', default=True, dest='secure',
@@ -416,12 +417,7 @@ def main(argv):
         return 1
     if not options.bucket_region:
         options.bucket_region = 'us-east-1'
-    connection = boto.s3.connect_to_region(options.bucket_region,
-       aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-       aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-       is_secure=True,
-       calling_format = boto.s3.connection.OrdinaryCallingFormat(),
-       )
+    connection = boto.s3.connect_to_region(options.bucket_region, is_secure=options.secure, host=options.host)
     bucket = connection.get_bucket(options.bucket)
     del bucket
     del connection
