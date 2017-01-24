@@ -129,16 +129,18 @@ class Value(object):
     def should_copy_content(self):
         return self.bucket_name is None
 
+
 def excluded(pathname, options):
-  for glob in options.include:
-    if fnmatch(pathname, glob):
-      return False
+    for glob in options.include:
+        if fnmatch(pathname, glob):
+            return False
 
-  for glob in options.exclude:
-    if fnmatch(pathname, glob):
-      return True
+    for glob in options.exclude:
+        if fnmatch(pathname, glob):
+            return True
 
-  return False
+    return False
+
 
 def walk_filesystem(source, options):
     if os.path.isdir(source):
